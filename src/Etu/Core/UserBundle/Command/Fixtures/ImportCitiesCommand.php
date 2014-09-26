@@ -2,6 +2,7 @@
 
 namespace Etu\Core\UserBundle\Command\Fixtures;
 
+use Doctrine\ORM\EntityManager;
 use Etu\Core\CoreBundle\Entity\City;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -34,9 +35,36 @@ class ImportCitiesCommand extends ContainerAwareCommand
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
+        /** @var EntityManager $em */
         $em = $this->getContainer()->get('doctrine')->getManager();
 
-        foreach ($this->cities as $cityData) {
+        $output->writeln('Comparing with database ...');
+
+        /** @var City[] $dbCities */
+        $dbCities = $em->getRepository('EtuCoreBundle:City')->findAll();
+        $dbCitiesNames = [];
+
+        foreach ($dbCities as $dbCity) {
+            $dbCitiesNames[] = $dbCity->getSlug();
+        }
+
+        /** @var array $localCities */
+        $localCities = $this->cities;
+        $localCitiesNames = [];
+        $localRegistry = [];
+
+        foreach ($localCities as $localCity) {
+            $localRegistry[$localCity['slug']] = $localCity;
+            $localCitiesNames[] = $localCity['slug'];
+        }
+
+        $toImport = array_diff($localCitiesNames, $dbCitiesNames);
+
+        $output->writeln('Importing ' . count($toImport) . ' cities ...');
+
+        foreach ($toImport as $identifier) {
+            $cityData = $localRegistry[$identifier];
+
             $city = new City();
             $city->setName($cityData['name']);
             $city->setSlug($cityData['slug']);
@@ -49,7 +77,7 @@ class ImportCitiesCommand extends ContainerAwareCommand
             $em->flush();
         }
 	}
-    
+
     private $cities = array(
         array('name' => 'Wasquehal','slug' => 'wasquehal','postalCodes' => '59290','population' => '20046','longitude' => '3.1500000','latitude' => '50.6667000'),
         array('name' => 'Saint-Michel-sur-Orge','slug' => 'saint-michel-sur-orge','postalCodes' => '91240','population' => '20046','longitude' => '2.3000000','latitude' => '48.6333000'),

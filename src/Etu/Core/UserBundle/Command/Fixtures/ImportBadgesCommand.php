@@ -2,6 +2,7 @@
 
 namespace Etu\Core\UserBundle\Command\Fixtures;
 
+use Doctrine\ORM\EntityManager;
 use Etu\Core\UserBundle\Entity\Badge;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -30,9 +31,36 @@ class ImportBadgesCommand extends ContainerAwareCommand
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
+        /** @var EntityManager $em */
         $em = $this->getContainer()->get('doctrine')->getManager();
 
-        foreach ($this->badges as $badgeData) {
+        $output->writeln('Comparing with database ...');
+
+        /** @var Badge[] $dbBadges */
+        $dbBadges = $em->getRepository('EtuUserBundle:Badge')->findAll();
+        $dbBadgesNames = [];
+
+        foreach ($dbBadges as $dbBadge) {
+            $dbBadgesNames[] = $dbBadge->getSerie() . '-' . $dbBadge->getLevel();
+        }
+
+        /** @var array $localBadges */
+        $localBadges = $this->badges;
+        $localBadgesNames = [];
+        $localRegistry = [];
+
+        foreach ($localBadges as $localBadge) {
+            $localRegistry[$localBadge['serie'] . '-' . $localBadge['level']] = $localBadge;
+            $localBadgesNames[] = $localBadge['serie'] . '-' . $localBadge['level'];
+        }
+
+        $toImport = array_diff($localBadgesNames, $dbBadgesNames);
+
+        $output->writeln('Importing ' . count($toImport) . ' badges ...');
+
+        foreach ($toImport as $identifier) {
+            $badgeData = $localRegistry[$identifier];
+
             $em->persist(new Badge(
                 $badgeData['serie'],
                 $badgeData['name'],
