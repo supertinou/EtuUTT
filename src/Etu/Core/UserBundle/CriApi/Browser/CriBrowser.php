@@ -20,10 +20,10 @@ class CriBrowser
 	{
         $browser = new \Buzz\Browser();
 
-		$get = '';
+		$get = [];
 
 		foreach ($parameters as $key => $value) {
-			$get .= $key . '=' . $value;
+			$get[] = $key . '=' . $value;
 		}
 
         return $browser->get(self::ROOT_URL . $path . '?' . implode('&', $get));
