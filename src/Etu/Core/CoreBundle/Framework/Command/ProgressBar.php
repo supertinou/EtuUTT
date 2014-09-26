@@ -1,6 +1,6 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command\Util;
+namespace Etu\Core\CoreBundle\Framework\Command;
 
 /**
  * Display a progress bar in the console.

@@ -1,10 +1,8 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command;
+namespace Etu\Core\UserBundle\Command\Synchronizer;
 
-use Doctrine\ORM\EntityManager;
-use Etu\Core\UserBundle\Command\Util\ProgressBar;
-use Etu\Core\UserBundle\Entity\User;
+use Etu\Core\CoreBundle\Framework\Command\ProgressBar;
 use Etu\Core\UserBundle\Sync\Iterator\Element\ElementToImport;
 use Etu\Core\UserBundle\Sync\Iterator\Element\ElementToRemove;
 use Etu\Core\UserBundle\Sync\Iterator\Element\ElementToUpdate;
@@ -12,14 +10,16 @@ use Etu\Core\UserBundle\Sync\Iterator\ImportIterator;
 use Etu\Core\UserBundle\Sync\Iterator\RemoveIterator;
 use Etu\Core\UserBundle\Sync\Iterator\UpdateIterator;
 use Etu\Core\UserBundle\Sync\Synchronizer;
-use Imagine\Gd\Image;
+
+use Doctrine\ORM\EntityManager;
+
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class SyncProcessCommand extends ContainerAwareCommand
+class SyncUsersCommand extends ContainerAwareCommand
 {
 	/**
 	 * Configure the command
@@ -27,7 +27,7 @@ class SyncProcessCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:users:sync')
+			->setName('etu:sync:users')
 			->setDescription('Synchronize users with the LDAP')
 		;
 	}
@@ -45,7 +45,7 @@ class SyncProcessCommand extends ContainerAwareCommand
 		$output->writeln('
 	Welcome to the EtuUTT users manager
 
-This command helps you to synchronise database with LDAP.
+This command helps you to synchronise users database with LDAP.
 
 For each user that don\'t exit anymore in the LDAP, the command will
 ask you to keep or delete him/her.
@@ -53,12 +53,11 @@ ask you to keep or delete him/her.
 
 		$container = $this->getContainer();
 
-
 		// Users
 		$output->writeln('Finding users differences ...');
 
 		/** @var $synchronizer Synchronizer */
-		$synchronizer = $container->get('etu.user.sync');
+		$synchronizer = $container->get('etu.sync.users');
 
 		$output->writeln('----------------------------------------');
 

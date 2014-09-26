@@ -1,6 +1,6 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command;
+namespace Etu\Core\UserBundle\Command\Fixtures;
 
 use Etu\Core\UserBundle\Entity\Badge;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -17,7 +17,7 @@ class ImportBadgesCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:badges:import')
+			->setName('etu:import:badges')
 			->setDescription('Import badges')
 		;
 	}

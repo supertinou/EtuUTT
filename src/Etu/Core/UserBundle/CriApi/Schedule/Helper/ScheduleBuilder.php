@@ -1,9 +1,9 @@
 <?php
 
-namespace Etu\Core\UserBundle\Schedule\Helper;
+namespace Etu\Core\UserBundle\CriApi\Schedule\Helper;
 
 use Etu\Core\UserBundle\Entity\Course;
-use Etu\Core\UserBundle\Schedule\Model\CourseHalf;
+use Etu\Core\UserBundle\CriApi\Schedule\Model\CourseHalf;
 
 /**
  * Schedule builder using courses.

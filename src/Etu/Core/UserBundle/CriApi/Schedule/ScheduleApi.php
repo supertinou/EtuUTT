@@ -1,9 +1,9 @@
 <?php
 
-namespace Etu\Core\UserBundle\Schedule;
+namespace Etu\Core\UserBundle\CriApi\Schedule;
 
-use Etu\Core\UserBundle\Schedule\Browser\CriBrowser;
-use Etu\Core\UserBundle\Schedule\Model\Course;
+use Etu\Core\UserBundle\CriApi\Browser\CriBrowser;
+use Etu\Core\UserBundle\CriApi\Schedule\Model\Course;
 
 /**
  * Schedules manager based on CRI-hosted API.
@@ -15,12 +15,12 @@ class ScheduleApi
 	 */
 	protected $browser;
 
-	/**
-	 * Constructor
-	 */
-	public function __construct()
+    /**
+     * @param CriBrowser $browser
+     */
+    public function __construct(CriBrowser $browser)
 	{
-		$this->browser = new CriBrowser();
+		$this->browser = $browser;
 	}
 
 	/**
@@ -29,7 +29,7 @@ class ScheduleApi
 	 */
 	public function findPage($page)
 	{
-		$result = json_decode($this->browser->request(array('all' => '1', 'page' => $page)));
+		$result = json_decode($this->browser->request('', [ 'page' => $page ])->getContent());
 
 		$courses = array();
 

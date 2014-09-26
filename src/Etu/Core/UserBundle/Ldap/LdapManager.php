@@ -4,12 +4,25 @@ namespace Etu\Core\UserBundle\Ldap;
 
 class LdapManager
 {
-	/**
-	 * @var resource
-	 */
-	protected $connection;
+    /**
+     * @var resource
+     */
+    protected $connection;
 
-	public $logs;
+    /**
+     * @var string
+     */
+    protected $host;
+
+    /**
+     * @var integer
+     */
+    protected $port;
+
+    /**
+     * @var array
+     */
+    public $logs;
 
 	/**
 	 * @param $host
@@ -18,25 +31,30 @@ class LdapManager
 	 */
 	public function __construct($host, $port)
 	{
-		$this->connection = ldap_connect($host, $port);
+		$this->connection = @ldap_connect($host, $port);
 		$this->logs = array();
 
 		if (! $this->connection) {
 			throw new \RuntimeException(sprintf('LDAP connection to %s:%s failed.', $host, $port));
 		}
+
+        $this->host = $host;
+        $this->port = $port;
 	}
 
-	/**
-	 * @return Model\User[]|Model\Organization[]
-	 */
-	public function getAll()
+    /**
+     * @return Model\User[]|Model\Organization[]
+     * @throws \RuntimeException
+     */
+    public function getAll()
 	{
-		$infos = ldap_get_entries(
-			$this->connection,
-			ldap_list(
-				$this->connection, 'ou=people,dc=utt,dc=fr', 'uid=*'
-			)
-		);
+        $list = @ldap_list($this->connection, 'ou=people,dc=utt,dc=fr', 'uid=*');
+
+        if (! $list) {
+            throw new \RuntimeException(sprintf('LDAP connection to %s:%s failed.', $this->host, $this->port));
+        }
+
+		$infos = ldap_get_entries($this->connection, $list);
 
 		$users = array();
 

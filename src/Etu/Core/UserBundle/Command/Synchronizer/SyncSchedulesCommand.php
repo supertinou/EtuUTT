@@ -1,19 +1,19 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command;
+namespace Etu\Core\UserBundle\Command\Synchronizer;
 
 use Doctrine\ORM\EntityManager;
-use Etu\Core\UserBundle\Command\Util\ProgressBar;
+use Etu\Core\CoreBundle\Framework\Command\ProgressBar;
 use Etu\Core\UserBundle\Entity\User;
-use Etu\Core\UserBundle\Schedule\Browser\CriBrowser;
-use Etu\Core\UserBundle\Schedule\Model\Course;
-use Etu\Core\UserBundle\Schedule\ScheduleApi;
+use Etu\Core\UserBundle\CriApi\Browser\CriBrowser;
+use Etu\Core\UserBundle\CriApi\Schedule\Model\Course;
+use Etu\Core\UserBundle\CriApi\Schedule\ScheduleApi;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class SyncScheduleCommand extends ContainerAwareCommand
+class SyncSchedulesCommand extends ContainerAwareCommand
 {
 	/**
 	 * Configure the command
@@ -21,7 +21,7 @@ class SyncScheduleCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:users:sync-schedule')
+			->setName('etu:sync:schedules')
 			->setDescription('Synchronize officials schedules with database schedules.')
 		;
 	}
@@ -45,17 +45,23 @@ This command helps you to synchronise database\'s with officials schedules.
 		$output->writeln("\nGetting officials schedules ...");
 		$output->writeln("------------------------------------------------------------");
 
-		$tempDirectory = __DIR__.'/../Resources/temp';
+		$tempDirectory = __DIR__.'/../Resources/temp/schedules';
 
-		if (! file_exists($tempDirectory.'/schedules')) {
-			mkdir($tempDirectory.'/schedules');
+		if (! file_exists($tempDirectory)) {
+			mkdir($tempDirectory, 0777, true);
 		}
 
-		$scheduleApi = new ScheduleApi();
+        /** @var ScheduleApi $scheduleApi */
+		$scheduleApi = $this->getContainer()->get('etu.sync.schedules');
 
 		$output->writeln('Requesting CRI API ('.CriBrowser::ROOT_URL.') ...');
 
-		$pageContent = $scheduleApi->findPage(1);
+        try {
+            $pageContent = $scheduleApi->findPage(1);
+        } catch (\Exception $e) {
+            throw new \RuntimeException('API is currently disabled by CRI');
+        }
+
 		$content = $pageContent['courses'];
 
 		$bar = new ProgressBar('%fraction% [%bar%] %percent%', '=>', ' ', 80, $pageContent['paging']->totalPages);

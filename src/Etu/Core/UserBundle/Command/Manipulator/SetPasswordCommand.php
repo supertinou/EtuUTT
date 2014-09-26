@@ -1,6 +1,6 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command;
+namespace Etu\Core\UserBundle\Command\Manipulator;
 
 use Etu\Core\UserBundle\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Doctrine\ORM\EntityManager;
 
-class KeepUserActiveCommand extends ContainerAwareCommand
+class SetPasswordCommand extends ContainerAwareCommand
 {
 	/**
 	 * Configure the command
@@ -18,8 +18,8 @@ class KeepUserActiveCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:users:keep-active')
-			->setDescription('Keep given user as external user (defining a password)')
+			->setName('etu:user:set-password')
+			->setDescription('Define the password of given user (set it as external if it was not)')
 		;
 	}
 

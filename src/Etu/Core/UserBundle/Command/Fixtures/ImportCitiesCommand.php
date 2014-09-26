@@ -1,6 +1,6 @@
 <?php
 
-namespace Etu\Core\CoreBundle\Command;
+namespace Etu\Core\UserBundle\Command\Fixtures;
 
 use Etu\Core\CoreBundle\Entity\City;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -22,7 +22,7 @@ class ImportCitiesCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:cities:import')
+			->setName('etu:import:cities')
 			->setDescription('Import cities')
 		;
 	}

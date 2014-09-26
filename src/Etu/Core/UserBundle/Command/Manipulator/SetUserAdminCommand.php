@@ -1,6 +1,6 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command;
+namespace Etu\Core\UserBundle\Command\Manipulator;
 
 use Etu\Core\UserBundle\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -18,7 +18,7 @@ class SetUserAdminCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:users:set-admin')
+			->setName('etu:user:set-admin')
 			->setDescription('Promote given user as global admin')
 		;
 	}

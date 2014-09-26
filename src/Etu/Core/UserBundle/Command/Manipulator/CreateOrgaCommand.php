@@ -1,9 +1,8 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command;
+namespace Etu\Core\UserBundle\Command\Manipulator;
 
 use Etu\Core\UserBundle\Entity\Organization;
-use Etu\Core\UserBundle\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +18,7 @@ class CreateOrgaCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:orgas:create')
+			->setName('etu:create:orga')
 			->setDescription('Create an organization')
 		;
 	}

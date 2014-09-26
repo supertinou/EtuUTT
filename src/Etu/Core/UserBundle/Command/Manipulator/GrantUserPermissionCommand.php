@@ -1,6 +1,6 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command;
+namespace Etu\Core\UserBundle\Command\Manipulator;
 
 use Etu\Core\UserBundle\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -18,7 +18,7 @@ class GrantUserPermissionCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:users:grant')
+			->setName('etu:user:grant')
 			->setDescription('Grant a permission for an user')
 		;
 	}

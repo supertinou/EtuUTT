@@ -1,6 +1,6 @@
 <?php
 
-namespace Etu\Core\UserBundle\Command;
+namespace Etu\Core\UserBundle\Command\Manipulator;
 
 use Etu\Core\UserBundle\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -18,7 +18,7 @@ class CreateUserCommand extends ContainerAwareCommand
 	protected function configure()
 	{
 		$this
-			->setName('etu:users:create')
+			->setName('etu:create:user')
             ->addOption('login', 'lo', InputOption::VALUE_REQUIRED, 'Login')
             ->addOption('firstName', 'fn', InputOption::VALUE_REQUIRED, 'First name')
             ->addOption('lastName', 'ln', InputOption::VALUE_REQUIRED, 'Last name')

@@ -4,11 +4,14 @@ parameters:
     etu.user.crypting.class: Etu\Core\UserBundle\Security\Encrypt\Encrypt
     etu.user.twig.privacy_extension.class: Etu\Core\UserBundle\Twig\Extension\PrivacyExtension
     etu.user.user_type.class: Etu\Core\UserBundle\Form\UserAutocompleteType
-    etu.user.ldap.class: Etu\Core\UserBundle\Ldap\LdapManager
-    etu.user.sync.class: Etu\Core\UserBundle\Sync\Synchronizer
     etu.user.badges_listener.class: Etu\Core\UserBundle\Model\BadgesManager
 
     etu.notifs.new_badge.class: Etu\Core\UserBundle\Notification\Helper\NewBadgeHelper
+
+    etu.sync.ldap.class: Etu\Core\UserBundle\Ldap\LdapManager
+    etu.sync.cri_browser.class: Etu\Core\UserBundle\CriApi\Browser\CriBrowser
+    etu.sync.users.class: Etu\Core\UserBundle\Sync\Synchronizer
+    etu.sync.schedules.class: Etu\Core\UserBundle\CriApi\Schedule\ScheduleApi
 
     etu.api.user.transformer.class: Etu\Core\UserBundle\Api\Transformer\UserTransformer
     etu.api.badge.transformer.class: Etu\Core\UserBundle\Api\Transformer\BadgeTransformer
@@ -35,15 +38,6 @@ services:
         tags:
             - { name: form.type, alias: user }
 
-    # LDAP
-    etu.user.ldap:
-        class: %etu.user.ldap.class%
-        arguments: [%etu.ldap.host%, %etu.ldap.port%]
-
-    etu.user.sync:
-        class: %etu.user.sync.class%
-        arguments: [@etu.user.ldap, @doctrine]
-
     # Password crypting
     etu.user.crypting:
         class: %etu.user.crypting.class%
@@ -68,6 +62,22 @@ services:
         arguments: [@twig]
         tags:
             - { name: etu.notifs_helper }
+
+    # Synchroniser
+    etu.sync.ldap:
+        class: %etu.sync.ldap.class%
+        arguments: [%etu.ldap.host%, %etu.ldap.port%]
+
+    etu.sync.cri_browser:
+        class: %etu.sync.cri_browser.class%
+
+    etu.sync.users:
+        class: %etu.sync.users.class%
+        arguments: [@etu.sync.ldap, @doctrine]
+
+    etu.sync.schedules:
+        class: %etu.sync.schedules.class%
+        arguments: [@etu.sync.cri_browser]
 
     # API
     etu.api.badge.transformer:

@@ -1,6 +1,6 @@
 <?php
 
-namespace Etu\Core\UserBundle\Schedule\Model;
+namespace Etu\Core\UserBundle\CriApi\Schedule\Model;
 
 /**
  * Course
