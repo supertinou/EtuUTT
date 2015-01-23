@@ -1,73 +1,144 @@
 
-var starting = $('.starting'),
-    ending = $('.ending'),
-    importing = $('.importing'),
-    failing = $('.failing'),
+/*
+ * File upload
+ */
+var inputFiles = $('#fileupload'),
+    dropzone = $('#dropzone');
 
-    progressbar = $('.progress .bar'),
-    current = $('.current'),
-    total = $('total'),
-    logs = $('.logs'),
-    noPhoto = $('.no_photo');
+inputFiles.fileupload({
+    dataType: 'json',
+    dropZone: dropzone,
 
-var totalCount = 0,
-    photos = [],
-    position = 0,
-    received = 0;
+    done: function (e, data) {
+        $.each(data.result.files, function (index, file) {
+            console.log(file);
+        });
+    }
+});
 
-$.getJSON(Routing.generate('argentique_admin_synchronize_start'))
-    .done(function(data) {
-        photos = data.photos;
+dropzone.bind('dragover', function (e) {
+    $('#dropzone').addClass('hover');
+});
 
-        if (data.count == 0) {
-            starting.hide();
-            noPhoto.show();
-            return;
+dropzone.bind('drop', function (e) {
+    $('#dropzone').removeClass('hover');
+});
+
+
+
+
+/*
+ * Collections list
+ */
+var readTree = $('#read-tree'),
+    loader = $('#photos-loader'),
+    explainations = $('#explainations'),
+    photos = $('#photos');
+
+readTree.jstree({
+    core: {
+        data: collectionsTree
+    }
+});
+
+readTree.on('select_node.jstree', function(node, selected) {
+    explainations.hide();
+    loader.show();
+    photos.hide();
+
+    var item = selected.node.data;
+
+    $.post(
+        Routing.generate('argentique_admin_photos', { p: encodeURI(item.pathname) }),
+        { item: item },
+        function(data) {
+            loader.hide();
+            photos.html(data);
+            photos.show();
+
+            photos.find('.argentique-gallery').justifiedGallery({
+                waitThumbnailsLoad: false,
+                rowHeight: 80
+            });
         }
+    );
+});
 
-        starting.hide();
 
-        importing.find('.stats .total').text(data.count);
-        importing.show();
 
-        totalCount = data.count;
-        total.text(totalCount);
 
-        var max = (totalCount > 10) ? 10 : totalCount;
+/*
+ * Collections edition
+ */
+var modal = $('#argentique-manage-collections');
 
-        for (var i = 0; i < max; i++) {
-            upload(photos[i]);
+modal.on('shown', function() {
+    var writeTree = modal.find('#write-tree');
+    var transaction = [];
+
+    writeTree.jstree({
+        plugins: [ 'dnd', 'types', 'unique' ],
+
+        core: {
+            data: collectionsTree,
+            check_callback: true,
+            html_titles: true
+        },
+
+        types: {
+            '#': {
+                max_depth: 3
+            }
         }
-    })
-    .fail(function(data) {
-        starting.hide();
-        failing.html('An error occured: <br /><br /><pre>' + JSON.stringify(data.responseJSON, null, 4) + '</pre>');
-        failing.show();
     });
 
-function upload(photoId) {
-    $.getJSON(Routing.generate('argentique_admin_synchronize_photo', { photoId: photoId }))
-        .done(function() {
-            received++;
+    writeTree.on('ready.jstree refresh.jstree', function(event) {
+        var container = $(event.target);
 
-            current.text(received);
+        container.find('.item-action').remove();
 
-            var percent = (received / totalCount) * 100;
-            progressbar.css('width', percent + '%');
+        container.find('li').each(function(key, li) {
+            li = $(li);
 
-            if (typeof photos[position] != 'undefined') {
-                upload(photos[position]);
-            } else if (received == totalCount) {
-                importing.hide();
-                ending.show();
-                window.location.replace(Routing.generate('argentique_admin_synchronize_end'));
-            }
-        })
-        .fail(function(data) {
-            starting.hide();
-            failing.html('An error occured: <br /><br /><pre>' + JSON.stringify(data.responseJSON, null, 4) + '</pre>');
-            failing.show();
+            var createLink = $('<a>');
+
+            createLink.attr('href', 'javascript:void(0)');
+            createLink.addClass('item-action').addClass('tip');
+            createLink.attr('title', 'Créer un enfant');
+            createLink.html('<i class="fa fa-plus"></i>');
+
+            createLink.click(function() {
+                console.log(li.attr('id'));
+            });
+
+
+            var renameLink = $('<a>');
+
+            renameLink.attr('href', 'javascript:void(0)');
+            renameLink.addClass('item-action').addClass('tip');
+            renameLink.attr('title', 'Renommer');
+            renameLink.html('<i class="fa fa-edit"></i>');
+
+            renameLink.click(function() {
+                console.log(li.attr('id'));
+            });
+
+
+            var removeLink = $('<a>');
+
+            removeLink.attr('href', 'javascript:void(0)');
+            removeLink.addClass('item-action').addClass('tip');
+            removeLink.attr('title', 'Supprimer');
+            removeLink.html('<i class="fa fa-times"></i>');
+
+            removeLink.click(function() {
+                console.log(li.attr('id'));
+            });
+
+            li.find('> .jstree-anchor:nth-child(2)')
+                .after(removeLink)
+                .after(renameLink)
+                .after(createLink);
         });
-
-    position++;
-}
+    });
+});

@@ -14,7 +14,7 @@ framework:
     validation:      { enable_annotations: true }
     templating:
         engines: ['twig']
-        #assets_version: SomeVersionScheme
+        assets_version: %assets_version%
     default_locale:  "%locale%"
     trusted_proxies: ~
     session:         ~
@@ -24,7 +24,7 @@ framework:
 twig:
     debug:            %kernel.debug%
     strict_variables: %kernel.debug%
-    cache:            %kernel.debug%
+    cache:            "%kernel.cache_dir%/twig"
 
 # Doctrine Configuration
 doctrine:
@@ -44,12 +44,21 @@ doctrine:
 
     orm:
         auto_generate_proxy_classes: %kernel.debug%
-        auto_mapping: true
 
-        filters:
-            softdeleteable:
-                class: Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter
-                enabled: true
+        entity_managers:
+            default:
+                auto_mapping: true
+
+                dql:
+                    numeric_functions:
+                        MONTH: DoctrineExtensions\Query\Mysql\Month
+                        YEAR: DoctrineExtensions\Query\Mysql\Year
+                        DAY: DoctrineExtensions\Query\Mysql\Day
+
+                filters:
+                    softdeleteable:
+                        class: Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter
+                        enabled: true
 
 # Minifier Assetic filters names
 minifier:

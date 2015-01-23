@@ -1,38 +1,39 @@
 {
-	"name": "etuutt/etuutt",
-	"license": "MIT",
-	"type": "project",
-	"description": "EtuUTT",
-	"autoload": {
-		"psr-0": {
-			"": ["src/"]
-		}
-	},
-	"require": {
-		"php": ">=5.3.3",
+    "name": "etuutt/etuutt",
+    "license": "MIT",
+    "type": "project",
+    "description": "EtuUTT",
+    "autoload": {
+        "psr-0": {
+            "": ["src/"]
+        }
+    },
+    "require": {
+        "php": ">=5.3.3",
 
-		"symfony/symfony": "2.3.*",
-		"doctrine/orm": ">=2.2.3,<2.4-dev",
-		"doctrine/doctrine-bundle": "1.2.*",
-		"twig/extensions": "1.0.*",
-		"symfony/assetic-bundle": "2.3.*",
-		"symfony/swiftmailer-bundle": "2.3.*",
-		"symfony/monolog-bundle": "2.3.*",
-		"sensio/distribution-bundle": "2.3.*",
-		"sensio/framework-extra-bundle": "2.3.*",
-		"sensio/generator-bundle": "2.3.*",
-		"incenteev/composer-parameter-handler": "~2.0",
+        "symfony/symfony": "2.3.*",
+        "doctrine/orm": ">=2.2.3,<2.4-dev",
+        "doctrine/doctrine-bundle": "1.2.*",
+        "beberlei/DoctrineExtensions": "*",
+        "twig/extensions": "1.0.*",
+        "symfony/assetic-bundle": "2.3.*",
+        "symfony/swiftmailer-bundle": "2.3.*",
+        "symfony/monolog-bundle": "2.3.*",
+        "sensio/distribution-bundle": "2.3.*",
+        "sensio/framework-extra-bundle": "2.3.*",
+        "sensio/generator-bundle": "2.3.*",
+        "incenteev/composer-parameter-handler": "~2.0",
 
         "liip/imagine-bundle": "0.21.*",
-		"friendsofsymfony/jsrouting-bundle": "1.5.*",
-		"doctrine/doctrine-fixtures-bundle": "2.2.*",
-		"stof/doctrine-extensions-bundle": "1.1.*",
-		"knplabs/knp-time-bundle": "1.3.*",
-		"knplabs/knp-paginator-bundle": "2.4.*",
-		"frequence-web/calendr-bundle": "1.*",
+        "friendsofsymfony/jsrouting-bundle": "1.5.*",
+        "doctrine/doctrine-fixtures-bundle": "2.2.*",
+        "stof/doctrine-extensions-bundle": "1.1.*",
+        "knplabs/knp-time-bundle": "1.3.*",
+        "knplabs/knp-paginator-bundle": "2.4.*",
+        "frequence-web/calendr-bundle": "1.*",
         "toopay/assetic-minifier": "1.3.*",
         "oyejorge/less.php": "~1.5",
-		"helios-ag/fm-bbcode-bundle": "6.2",
+        "helios-ag/fm-bbcode-bundle": "6.2",
         "sabre/vobject" : "~3.1",
         "fzaninotto/faker": "~1.3",
         "nelmio/api-doc-bundle": "2.5.*",
@@ -40,34 +41,34 @@
         "jasig/phpcas": "dev-master",
         "sonata-project/intl-bundle": "2.2.*",
         "elao/web-profiler-extra-bundle" : "~2.3@dev",
-        "bshaffer/oauth2-server-php": "1.4.*",
-        "kriswallsmith/buzz": "0.*"
-	},
-	"scripts": {
+        "kriswallsmith/buzz": "0.*",
+        "league/glide": "0.2.*"
+    },
+    "scripts": {
         "post-install-cmd": [
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile"
         ],
-		"post-update-cmd": [
-			"Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
-			"Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
-			"Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
+        "post-update-cmd": [
+            "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile"
-		]
-	},
-	"config": {
-		"bin-dir": "bin"
-	},
-	"minimum-stability": "stable",
-	"extra": {
-		"symfony-app-dir": "app",
-		"symfony-web-dir": "web",
-		"incenteev-parameters": {
-			"file": "app/config/parameters.yml"
-		},
-		"branch-alias": {
-			"dev-master": "10.1-dev"
-		}
-	}
+        ]
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "minimum-stability": "stable",
+    "extra": {
+        "symfony-app-dir": "app",
+        "symfony-web-dir": "web",
+        "incenteev-parameters": {
+            "file": "app/config/parameters.yml"
+        },
+        "branch-alias": {
+            "dev-master": "10.1-dev"
+        }
+    }
 }

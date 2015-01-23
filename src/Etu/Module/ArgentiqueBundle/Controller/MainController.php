@@ -2,11 +2,8 @@
 
 namespace Etu\Module\ArgentiqueBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
 use Etu\Core\CoreBundle\Framework\Definition\Controller;
-use Etu\Module\ArgentiqueBundle\Entity\Collection;
-use Etu\Module\ArgentiqueBundle\Entity\Photo;
-use Etu\Module\ArgentiqueBundle\Entity\PhotoSet;
+use Etu\Module\ArgentiqueBundle\EtuModuleArgentiqueBundle;
 
 // Import annotations
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -18,95 +15,112 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 class MainController extends Controller
 {
     /**
-     * @Route("", name="argentique_index", options={"expose"=true})
+     * @Route("", name="argentique_index")
+     * @Route("/collection/{directory}", requirements={"directory"=".+"}, name="argentique_directory")
      * @Template()
      */
-    public function indexAction()
+    public function indexAction($directory = null)
     {
         if (! $this->getUserLayer()->isConnected()) {
             return $this->createAccessDeniedResponse();
         }
 
-        /** @var EntityManager $em */
-        $em = $this->getDoctrine()->getManager();
+        /** @var string $root */
+        $root = EtuModuleArgentiqueBundle::getPhotosRoot();
 
-        /** @var Collection[] $collections */
-        $collections = $em->createQueryBuilder()
-            ->select('c, s')
-            ->from('EtuModuleArgentiqueBundle:Collection', 'c')
-            ->leftJoin('c.sets', 's')
-            ->orderBy('c.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+        if (! file_exists($root)) {
+            mkdir($root, 0777, true);
+        }
 
-        /** @var Photo[] $photos */
-        $photos = $em->createQueryBuilder()
-            ->select('p')
-            ->from('EtuModuleArgentiqueBundle:Photo', 'p')
-            ->orderBy('p.createdAt', 'DESC')
-            ->where('p.ready = 1')
-            ->setMaxResults(20)
-            ->getQuery()
-            ->getResult();
+        if (strpos($directory, './') !== false) {
+            return $this->redirect($this->generateUrl('argentique_index'));
+        }
+
+        $breadcrumb = [];
+        $dirParts = explode('/', $directory);
+
+        $breadcrumb[] = [
+            'basename' => 'Argentique',
+            'pathname' => null,
+        ];
+
+        $pathname = '';
+
+        foreach ($dirParts as $part) {
+            if (empty($part)) {
+                continue;
+            }
+
+            if (empty($pathname)) {
+                $pathname = $part;
+            } else {
+                $pathname .= '/' . $part;
+            }
+
+            $breadcrumb[] = [
+                'basename' => $part,
+                'pathname' => $pathname,
+            ];
+        }
+
+        /** @var \SplFileInfo[] $iterator */
+        $iterator = new \DirectoryIterator($root . '/' . $directory);
+
+        /** @var array $directories */
+        $directories = [];
+
+        /** @var array $photos */
+        $photos = [];
+
+        foreach ($iterator as $file) {
+            if (substr($file->getBasename(), 0, 1) == '.') {
+                continue;
+            }
+
+            if ($file->isDir()) {
+                $basename = str_replace($root . '/' . (($directory) ? $directory . '/' : ''), '', $file->getPathname());
+
+                $score = $basename;
+
+                if (! $directory) {
+                    $score = intval(substr($basename, 1)) * 2;
+
+                    if (substr($basename, 0, 1) == 'A') {
+                        $score += 1;
+                    }
+                }
+
+                $directories[] = [
+                    'pathname' => str_replace($root . '/', '', $file->getPathname()),
+                    'basename' => $basename,
+                    'score' => $score,
+                ];
+            } elseif ($file->getExtension() == 'jpg' || $file->getExtension() == 'jpeg') {
+                $size = getimagesize($file->getPathname());
+
+                $photos[] = [
+                    'extension' => $file->getExtension(),
+                    'pathname' => str_replace($root . '/', '', $file->getPathname()),
+                    'basename' => $file->getBasename(),
+                    'filename' => $file->getBasename('.' . $file->getExtension()),
+                    'size' => [
+                        'width' => $size[0],
+                        'height' => $size[1],
+                        'ratio' => $size[1] / 150
+                    ]
+                ];
+            }
+        }
+
+        usort($directories, function($a, $b) {
+            return ($a['score'] > $b['score']) ? -1 : 1;
+        });
 
         return [
-            'collections' => $collections,
+            'breadcrumb' => $breadcrumb,
+            'directory' => $directory,
             'photos' => $photos,
-            'is_admin' => $this->isAdmin()
+            'directories' => $directories,
         ];
-    }
-
-    /**
-     * @Route("/set/{id}/{slug}", requirements={"id"="\d+"}, name="argentique_set")
-     * @Template()
-     */
-    public function setAction($id)
-    {
-        if (! $this->getUserLayer()->isConnected()) {
-            return $this->createAccessDeniedResponse();
-        }
-
-        /** @var EntityManager $em */
-        $em = $this->getDoctrine()->getManager();
-
-        /** @var Collection[] $collections */
-        $collections = $em->createQueryBuilder()
-            ->select('c, s')
-            ->from('EtuModuleArgentiqueBundle:Collection', 'c')
-            ->leftJoin('c.sets', 's')
-            ->orderBy('c.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-
-        /** @var PhotoSet $set */
-        $set = $em->createQueryBuilder()
-            ->select('s, p')
-            ->from('EtuModuleArgentiqueBundle:PhotoSet', 's')
-            ->leftJoin('s.photos', 'p')
-            ->addOrderBy('p.createdAt', 'DESC')
-            ->where('s.id = :id')
-            ->andWhere('p.ready = 1')
-            ->setParameter('id', $id)
-            ->orderBy('s.createdAt', 'DESC')
-            ->getQuery()
-            ->getOneOrNullResult();
-
-        if (! $set) {
-            throw $this->createNotFoundException();
-        }
-
-        return [
-            'collections' => $collections,
-            'set' => $set,
-            'is_admin' => $this->isAdmin()
-        ];
-    }
-
-    /**
-     * @return bool
-     */
-    private function isAdmin()
-    {
-        return in_array($this->getUser()->getLogin(), $this->container->getParameter('etu.argentique.authorized_admin'));
     }
 }

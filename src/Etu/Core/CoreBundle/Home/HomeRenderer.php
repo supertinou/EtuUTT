@@ -32,7 +32,9 @@ class HomeRenderer
      * @param ModulesManager $modulesManager
      * @param FormFactory $formFactory
      */
-    public function __construct(HomeBuilder $builder, ModulesManager $modulesManager, FormFactory $formFactory)
+    public function __construct(HomeBuilder $builder,
+                                ModulesManager $modulesManager,
+                                FormFactory $formFactory)
     {
         $this->builder = $builder;
         $this->modulesManager = $modulesManager;
@@ -41,12 +43,14 @@ class HomeRenderer
 
     public function createCoursesBlock()
     {
-        return [
+        $block = [
             'template' => 'EtuCoreBundle:Main/index_blocks:courses.html.twig',
             'context' => [
                 'nextCourses' => $this->builder->getNextCourses(),
             ]
         ];
+
+        return $block;
     }
 
     public function createTrombiBlock()
@@ -61,22 +65,26 @@ class HomeRenderer
             ->add('personnalMail', 'hidden', array('required' => false))
             ->getForm();
 
-        return [
+        $block = [
             'template' => 'EtuCoreBundle:Main/index_blocks:trombi.html.twig',
             'context' => [
                 'trombiForm' => $trombiFrom->createView(),
             ]
         ];
+
+        return $block;
     }
 
     public function createNotificationsBlock()
     {
-        return [
+        $block = [
             'template' => 'EtuCoreBundle:Main/index_blocks:notifications.html.twig',
             'context' => [
                 'notifications' => $this->builder->getNotifications($this->modulesManager->getEnabledModules()),
             ]
         ];
+
+        return $block;
     }
 
     public function createEventsBlock()
@@ -85,7 +93,7 @@ class HomeRenderer
             $events = $this->builder->getEvents();
 
             if (count($events) > 0) {
-                return [
+                $block = [
                     'template' => 'EtuCoreBundle:Main/index_blocks:events.html.twig',
                     'context' => [
                         'events' => $events,
@@ -94,7 +102,7 @@ class HomeRenderer
             }
         }
 
-        return false;
+        return (isset($block)) ? $block : false;
     }
 
     public function createReviewsBlock()
@@ -103,7 +111,7 @@ class HomeRenderer
             $reviews = $this->builder->getUvReviews();
 
             if (count($reviews) > 0) {
-                return [
+                $block = [
                     'template' => 'EtuCoreBundle:Main/index_blocks:reviews.html.twig',
                     'context' => [
                         'reviews' => $reviews,
@@ -112,7 +120,7 @@ class HomeRenderer
             }
         }
 
-        return false;
+        return (isset($block)) ? $block : false;
     }
 
     public function createPhotosBlock()
@@ -121,7 +129,7 @@ class HomeRenderer
             $photos = $this->builder->getPhotos();
 
             if (count($photos) > 0) {
-                return [
+                $block = [
                     'template' => 'EtuCoreBundle:Main/index_blocks:photos.html.twig',
                     'context' => [
                         'photos' => $photos,
@@ -130,7 +138,23 @@ class HomeRenderer
             }
         }
 
-        return false;
+        return (isset($block)) ? $block : false;
+    }
+
+    public function createBirthdaysBlock()
+    {
+        $birthdays = $this->builder->getBirthdays();
+
+        if (count($birthdays) > 0) {
+            $block = [
+                'template' => 'EtuCoreBundle:Main/index_blocks:birthdays.html.twig',
+                'context' => [
+                    'birthdays' => $birthdays,
+                ]
+            ];
+        }
+
+        return (isset($block)) ? $block : false;
     }
 
     /**
@@ -149,6 +173,10 @@ class HomeRenderer
 
         if ($photosBlock = $this->createPhotosBlock()) {
             $columns[0][] = $photosBlock;
+        }
+
+        if ($birthdays = $this->createBirthdaysBlock()) {
+            $columns[0][] = $birthdays;
         }
 
         if ($reviewsBlock = $this->createReviewsBlock()) {

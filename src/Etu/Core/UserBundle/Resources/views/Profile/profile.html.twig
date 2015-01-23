@@ -262,16 +262,52 @@
                     <div class="block">
                         <div class="block-title">{{ 'user.profile.profile.apps'|trans }}</div>
 
-                        <ul>
-                            {% for client in apps %}
+                        <p class="padding20-sides">
+                            {{ 'user.profile.profile.apps_explain'|trans }}
+                        </p>
+
+                        <ul class="nav nav-list">
+                            {% for authorization in apps %}
+                                {% set client = authorization.client %}
+
                                 <li>
-                                    {{ client.name }}
+                                    <a href="javascript:void(0);"
+                                       onclick="$('#revoke-{{ client.clientId }}').show(); return false;">
+                                        <img src="{{ asset('uploads/apps/' ~ client.icon) }}" class="api-app-image-icon" />
+                                        {{ client.name }}
+                                    </a>
+
+                                    <div id="revoke-{{ client.clientId }}" class="overlay">
+                                        <div class="confirmation">
+                                            <p>
+                                                L'application <strong>{{ client.name }}</strong> peut lire les données
+                                                suivantes de votre compte :
+                                            </p>
+
+                                            <ul>
+                                                {% for scope in authorization.scopes %}
+                                                    <li>{{ scope.description }}</li>
+                                                {% endfor %}
+                                            </ul>
+
+                                            <hr />
+
+                                            <a href="{{ path('user_profile_revoke_app', { 'clientId': client.clientId }) }}" class="btn btn-primary">
+                                                {{ 'user.profile.profile.revoke_app'|trans }}
+                                            </a>
+                                            <a href="javascript:void(0);" class="btn btn-default"
+                                               onclick="$('#revoke-{{ client.clientId }}').hide(); return false;">
+                                                {{ 'user.profile.profile.revoke_cancel'|trans }}
+                                            </a>
+                                        </div>
+                                    </div>
                                 </li>
                             {% endfor %}
                         </ul>
+
                     </div>
                 {% endif %}
-			</div>
+            </div>
 		</div>
 
 		<div class="block">

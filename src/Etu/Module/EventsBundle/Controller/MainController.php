@@ -53,7 +53,6 @@ class MainController extends Controller
 	 *      name="events_find",
 	 *      options={"expose"=true}
 	 * )
-	 * @Template()
 	 */
 	public function ajaxEventsAction(Request $request, $category = 'all')
 	{
@@ -74,8 +73,8 @@ class MainController extends Controller
 			)));
 		}
 
-		$start = \DateTime::createFromFormat('U', $start);
-		$end = \DateTime::createFromFormat('U', $end);
+		$start = \DateTime::createFromFormat('Y-m-d', $start);
+		$end = \DateTime::createFromFormat('Y-m-d', $end);
 
 		/** @var Calendar $calendr */
 		$calendr = $this->get('calendr');

@@ -3,70 +3,53 @@
 namespace Etu\Core\ApiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Etu\Core\UserBundle\Entity\User;
 use Imagine\Gd\Image;
 use Imagine\Gd\Imagine;
 use Imagine\Image\Box;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * OauthClients
  *
- * @ORM\Table(name="oauth_clients")
+ * @ORM\Table(name="oauth_clients", indexes={ @ORM\Index(name="client_index", columns={ "clientId" }) })
  * @ORM\Entity
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt")
  */
 class OauthClient
 {
     /**
      * @var integer
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
 
     /**
+     * @var User $user
+     *
+     * @ORM\ManyToOne(targetEntity="\Etu\Core\UserBundle\Entity\User")
+     * @ORM\JoinColumn()
+     */
+    private $user;
+
+    /**
      * @var string
      *
-     * @ORM\Column(name="client_id", type="string", length=80)
+     * @ORM\Column(type="string", length=80)
      */
     private $clientId;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="client_secret", type="string", length=80, nullable=false)
+     * @ORM\Column(type="string", length=80, nullable=false)
      */
     private $clientSecret;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="redirect_uri", type="string", length=2000, nullable=false)
-     */
-    private $redirectUri;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="grant_types", type="string", length=80, nullable=true)
-     */
-    private $grantTypes;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="scope", type="string", length=100, nullable=true)
-     */
-    private $scope;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="user_id", type="string", length=80, nullable=true)
-     */
-    private $userId;
 
     /**
      * @var string
@@ -76,14 +59,49 @@ class OauthClient
     private $name;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(type="string", length=2000, nullable=false)
+     */
+    private $redirectUri;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(type="datetime", nullable=false)
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTime $deletedAt
+     *
+     * @ORM\Column(type="datetime", nullable = true)
+     */
+    protected $deletedAt;
+
+    /**
+     * @var OauthScope[] $scopes
+     *
+     * @ORM\ManyToMany(targetEntity="OauthScope")
+     * @ORM\JoinTable(name="oauth_clients_scopes")
+     */
+    private $scopes;
+
+    /**
      * @var UploadedFile
      *
      * @Assert\Image(maxSize = "2M", minWidth = 150, minHeight = 150)
      */
     public $file;
 
-    public $scopesList = [];
-
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+        $this->scopes = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
     /**
      * Upload the photo
@@ -92,9 +110,7 @@ class OauthClient
      */
     public function upload()
     {
-        if (null === $this->file) {
-            return false;
-        }
+        $rootDir = __DIR__ . '/../../../../../web/uploads/apps';
 
         /*
          * Upload and resize
@@ -102,42 +118,38 @@ class OauthClient
         $imagine = new Imagine();
 
         // Create the logo thumbnail in a 200x200 box
-        $thumbnail = $imagine->open($this->file->getPathname())
-            ->thumbnail(new Box(200, 200), Image::THUMBNAIL_OUTBOUND);
+        if (null === $this->file) {
+            $thumbnail = $imagine->open($rootDir . '/default.png')
+                ->thumbnail(new Box(200, 200), Image::THUMBNAIL_OUTBOUND);
+        } else {
+            $thumbnail = $imagine->open($this->file->getPathname())
+                ->thumbnail(new Box(200, 200), Image::THUMBNAIL_OUTBOUND);
+        }
 
         // Save the result
-        $thumbnail->save(__DIR__ . '/../../../../../web/uploads/apps/' . $this->getClientId().'.jpeg');
+        $thumbnail->save($rootDir . '/' . $this->getClientId().'.png');
     }
 
+    /**
+     * @return int
+     */
     public function generateClientId()
     {
         return $this->clientId = mt_rand(100000000, 2100000000) * 25;
     }
 
+    /**
+     * @return string
+     */
     public function generateClientSecret()
     {
         return $this->clientSecret = md5(uniqid(time(), true));
     }
 
     /**
-     * @return string
-     */
-    public function injectScopesList()
-    {
-        $this->scopesList[] = 'public';
-        return $this->scope = implode(' ', array_unique($this->scopesList));
-    }
-
-    /**
-     * @return string
-     */
-    public function deductScopesList()
-    {
-        return $this->scopesList = explode(' ', $this->scope);
-    }
-
-    /**
-     * @return int
+     * Get id
+     *
+     * @return integer
      */
     public function getId()
     {
@@ -145,19 +157,32 @@ class OauthClient
     }
 
     /**
+     * Get client icon
+     *
+     * @return string
+     */
+    public function getIcon()
+    {
+        return $this->clientId . '.png';
+    }
+
+    /**
+     * Set clientId
+     *
      * @param string $clientId
-     * @return $this
+     * @return OauthClient
      */
     public function setClientId($clientId)
     {
         $this->clientId = $clientId;
+    
         return $this;
     }
 
     /**
      * Get clientId
      *
-     * @return string
+     * @return string 
      */
     public function getClientId()
     {
@@ -173,18 +198,41 @@ class OauthClient
     public function setClientSecret($clientSecret)
     {
         $this->clientSecret = $clientSecret;
-
+    
         return $this;
     }
 
     /**
      * Get clientSecret
      *
-     * @return string
+     * @return string 
      */
     public function getClientSecret()
     {
         return $this->clientSecret;
+    }
+
+    /**
+     * Set name
+     *
+     * @param string $name
+     * @return OauthClient
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+    
+        return $this;
+    }
+
+    /**
+     * Get name
+     *
+     * @return string 
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
     /**
@@ -196,14 +244,14 @@ class OauthClient
     public function setRedirectUri($redirectUri)
     {
         $this->redirectUri = $redirectUri;
-
+    
         return $this;
     }
 
     /**
      * Get redirectUri
      *
-     * @return string
+     * @return string 
      */
     public function getRedirectUri()
     {
@@ -219,14 +267,14 @@ class OauthClient
     public function setGrantTypes($grantTypes)
     {
         $this->grantTypes = $grantTypes;
-
+    
         return $this;
     }
 
     /**
      * Get grantTypes
      *
-     * @return string
+     * @return string 
      */
     public function getGrantTypes()
     {
@@ -234,94 +282,81 @@ class OauthClient
     }
 
     /**
-     * Set scope
+     * Set createdAt
      *
-     * @param string $scope
+     * @param \DateTime $createdAt
      * @return OauthClient
      */
-    public function setScope($scope)
+    public function setCreatedAt($createdAt)
     {
-        $this->scope = $scope;
-
+        $this->createdAt = $createdAt;
+    
         return $this;
     }
 
     /**
-     * Get scope
+     * Get createdAt
      *
-     * @return string
+     * @return \DateTime 
      */
-    public function getScope()
+    public function getCreatedAt()
     {
-        return $this->scope;
+        return $this->createdAt;
+    }
+
+    /**
+     * Set user
+     *
+     * @param \Etu\Core\UserBundle\Entity\User $user
+     * @return OauthClient
+     */
+    public function setUser(\Etu\Core\UserBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+    
+        return $this;
+    }
+
+    /**
+     * Get user
+     *
+     * @return \Etu\Core\UserBundle\Entity\User 
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Add scopes
+     *
+     * @param \Etu\Core\ApiBundle\Entity\OauthScope $scopes
+     * @return OauthClient
+     */
+    public function addScope(\Etu\Core\ApiBundle\Entity\OauthScope $scopes)
+    {
+        $this->scopes[] = $scopes;
+    
+        return $this;
+    }
+
+    /**
+     * Remove scopes
+     *
+     * @param \Etu\Core\ApiBundle\Entity\OauthScope $scopes
+     */
+    public function removeScope(\Etu\Core\ApiBundle\Entity\OauthScope $scopes)
+    {
+        $this->scopes->removeElement($scopes);
     }
 
     /**
      * Get scopes
      *
-     * @return array
+     * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getScopeList()
+    public function getScopes()
     {
-        return explode(' ', $this->scope);
-    }
-
-    /**
-     * Set userId
-     *
-     * @param string $userId
-     * @return OauthClient
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-
-        return $this;
-    }
-
-    /**
-     * Get userId
-     *
-     * @return string
-     */
-    public function getUserId()
-    {
-        return $this->userId;
-    }
-
-    /**
-     * @param string $image
-     * @return $this
-     */
-    public function setImage($image)
-    {
-        $this->image = $image;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getImage()
-    {
-        return $this->image;
-    }
-
-    /**
-     * @param string $name
-     * @return $this
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
+        return $this->scopes;
     }
 }
