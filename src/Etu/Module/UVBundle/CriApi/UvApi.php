@@ -28,16 +28,16 @@ class UvApi
 	 */
 	public function findPage($page)
 	{
-		$result = json_decode($this->browser->request('', [ 'page' => $page ])->getContent());
+		$result = json_decode($this->browser->request('/uvs', [ 'page' => $page ])->getContent(), true);
 
 		$courses = array();
 
-		foreach ($result->body->courses as $values) {
+		foreach ($result['data'] as $values) {
 			$courses[] = $values;
 		}
 
 		return array(
-			'paging' => $result->body->paging,
+			'pagination' => $result['pagination'],
 			'courses' => $courses,
 		);
 	}

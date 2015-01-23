@@ -9,7 +9,7 @@ use Buzz\Message\MessageInterface;
  */
 class CriBrowser
 {
-	const ROOT_URL = 'https://alambix2-dev.utt.fr/test/apietu/web/index.php';
+	const ROOT_URL = 'http://alambix2-dev.utt.fr/test/apietu/web/index.php';
 
     /**
      * @param string $path
