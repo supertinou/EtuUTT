@@ -3,6 +3,8 @@ parameters:
     etu.notifs.uv_new_comment.class: Etu\Module\UVBundle\Notification\Helper\NewCommentHelper
     etu.notifs.uv_new_review.class: Etu\Module\UVBundle\Notification\Helper\NewReviewHelper
 
+    etu.sync.uvs.class: Etu\Module\UVBundle\CriApi\UvApi
+
 services:
 
     # Notifications helper
@@ -11,8 +13,15 @@ services:
         arguments: [@twig]
         tags:
             - { name: etu.notifs_helper }
+
     etu.notifs.uv_new_review:
         class: %etu.notifs.uv_new_review.class%
         arguments: [@twig]
         tags:
             - { name: etu.notifs_helper }
+
+
+    # Synchronizer
+    etu.sync.uvs:
+        class: %etu.sync.uvs.class%
+        arguments: [ @etu.sync.cri_browser ]

@@ -21,7 +21,7 @@ class SyncSchedulesCommand extends ContainerAwareCommand
 	{
 		$this
 			->setName('etu:sync:schedules')
-			->setDescription('Synchronize officials schedules with database schedules.')
+			->setDescription('Synchronize schedules from the CRI API')
 		;
 	}
 
@@ -36,7 +36,7 @@ class SyncSchedulesCommand extends ContainerAwareCommand
 		$output->writeln('
 	Welcome to the EtuUTT schedules manager
 
-This command helps you to synchronise database\'s with officials schedules.
+This command helps you to synchronise EtuUTT schedules with officials schedules.
 ');
 
 		$output->writeln("\nGetting officials schedules ...");
